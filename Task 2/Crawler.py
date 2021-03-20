@@ -6,25 +6,14 @@ import time
 import argparse
 import logging.config
 from selenium import webdriver
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from selenium.webdriver.common.action_chains import ActionChains
 from dateutil import parser as date_parser
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
-
-"""
-
-This is an experimental script which attempts at utilizing some Nike APIs.
-
-Current implementation:
-    1. Login with Selenium
-    2. Using the driver's stored cookies, make a Nike API request to add the desired item to your cart
-    3. Load the checkout page and place an order
-    
-Not sure if this will be any faster than the other script...
-
-"""
 
 
 logging.config.dictConfig({
@@ -92,8 +81,43 @@ def select_properties(driver):
     speed = driver.find_element_by_xpath(sp).text
     print(speed)
     driver.execute_script("window.history.go(-1)")
+    insert_to_db(product_id=product_id, frequency=frequency, voltage=voltage,
+                 min_rating=min_rating, max_rating=max_rating, speed=speed)
     time.sleep(2)
     return
+
+def insert_to_db(product_id, frequency, voltage, min_rating,
+                 max_rating, speed):
+    db_name = "marinetraffic"
+    user = "postgres"
+    password = "postgres"
+    table_name = "motors"
+    host = "localhost"
+
+    conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
+    cur = conn.cursor()
+
+    # cur.execute("SELECT datname FROM pg_database;")
+    # list_database = cur.fetchall()
+    # print(list_database)
+
+    # cur.execute('CREATE DATABASE ' + db_name)
+    cur.execute('CREATE TABLE IF NOT EXISTS '+ table_name +' (PRODUCT_ID VARCHAR, FREQUENCY VARCHAR, VOLTAGE VARCHAR, MIN_RATING VARCHAR, MAX_RATING VARCHAR, SPEED VARCHAR);')
+    columns_names = ['PRODUCT_ID', 'FREQUENCY', 'VOLTAGE', 'MIN_RATING', 'MAX_RATING', 'SPEED']
+    values = [product_id, frequency, voltage, min_rating, max_rating, speed]
+    columns_names_str = ','.join(columns_names)
+    values_str = ','.join(values)
+    binds_str = ','.join('%s' for _ in range(len(columns_names)))
+
+
+    # cur.execute('INSERT INTO ' + table_name + '(PRODUCT_ID, FREQUENCY, VOLTAGE, MIN_RATING, MAX_RATING, SPEED) VALUES('+product_id+','+frequency+','+voltage+','+min_rating+','+max_rating+','+speed+')')
+    sql = ('INSERT INTO ' + table_name + '({columns_names}) VALUES ({binds})'.format(columns_names=columns_names_str,
+                                                                                     binds=str(binds_str)))
+    cur.execute(sql, values)
+    conn.commit()
+    cur.close()
+    conn.close()
+
 
 def open_product(driver):
     time.sleep(2)
@@ -145,6 +169,8 @@ def click_next(driver):
 
 
 if __name__ == "__main__":
+    # insert_to_db(product_id='C32 with Upgradeable Package', frequency='50 or 60 Hz',voltage='220 to 4160', min_rating='830 ekW (910 kVA)',
+    #              max_rating='1000 ekW (1250 kVA)', speed='1500 or 1800 rpm')
     parser = argparse.ArgumentParser()
     parser.add_argument("--driver-type", default="chrome", choices=("firefox", "chrome"))
     args = parser.parse_args()
