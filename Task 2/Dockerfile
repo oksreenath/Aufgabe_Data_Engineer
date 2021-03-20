@@ -11,4 +11,4 @@ RUN \
 
 COPY . .
 
-CMD ["python3", "Marine_Traffic_API.py" ]
+CMD ["python3", "Crawler.py" ]

@@ -1,20 +1,21 @@
 import os
 import sys
-import requests
-from selenium.webdriver.common.keys import Keys
+#import requests
+#from selenium.webdriver.common.keys import Keys
 import time
 import argparse
 import logging.config
 from selenium import webdriver
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from selenium.webdriver.common.action_chains import ActionChains
-from dateutil import parser as date_parser
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support import expected_conditions as EC
-
+# from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+# from selenium.webdriver.common.action_chains import ActionChains
+# from dateutil import parser as date_parser
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.common.exceptions import TimeoutException
+# from selenium.webdriver.support import expected_conditions as EC
+click_next_counter = 0
 
 logging.config.dictConfig({
     "version": 1,
@@ -86,22 +87,51 @@ def select_properties(driver):
     time.sleep(2)
     return
 
-def insert_to_db(product_id, frequency, voltage, min_rating,
-                 max_rating, speed):
+def setup_db():
+    db_exists = False
     db_name = "marinetraffic"
     user = "postgres"
     password = "postgres"
-    table_name = "motors"
     host = "localhost"
-
     conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
     cur = conn.cursor()
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cur.execute("SELECT datname FROM pg_database;")
+    list_database = cur.fetchall()
+    for i in list_database:
+        if "marinetraffic" in str(i):
+            db_exists = True
+    # cur.execute('DROP DATABASE IF EXISTS '+ db_name)
+    if not db_exists:
+        cur.execute('CREATE DATABASE '+ db_name)
+    return conn, cur
 
+def insert_to_db(product_id, frequency, voltage, min_rating,
+                 max_rating, speed):
+
+    conn, cur = setup_db()
+    # db_exists = False
+    # db_name = "marinetraffic"
+    # user = "postgres"
+    # password = "postgres"
+
+    # host = "localhost"
+    #
+    # conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
+    # cur = conn.cursor()
+    # conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     # cur.execute("SELECT datname FROM pg_database;")
     # list_database = cur.fetchall()
-    # print(list_database)
+    # for i in list_database:
+    #     if "marinetraffic" in str(i):
+    #         db_exists = True
+    # # cur.execute('DROP DATABASE IF EXISTS '+ db_name)
+    # if not db_exists:
+    #     cur.execute('CREATE DATABASE '+ db_name)
 
     # cur.execute('CREATE DATABASE ' + db_name)
+
+    table_name = "motors"
     cur.execute('CREATE TABLE IF NOT EXISTS '+ table_name +' (PRODUCT_ID VARCHAR, FREQUENCY VARCHAR, VOLTAGE VARCHAR, MIN_RATING VARCHAR, MAX_RATING VARCHAR, SPEED VARCHAR);')
     columns_names = ['PRODUCT_ID', 'FREQUENCY', 'VOLTAGE', 'MIN_RATING', 'MAX_RATING', 'SPEED']
     values = [product_id, frequency, voltage, min_rating, max_rating, speed]
@@ -120,33 +150,55 @@ def insert_to_db(product_id, frequency, voltage, min_rating,
 
 
 def open_product(driver):
+    global click_next_counter
     time.sleep(2)
     counter = 0
-    for i in range(1,16):
-        if i <4:
-            driver.execute_script("window.scrollTo(0, 600)")
-        elif i>3 and i<7:
+    if click_next_counter == 13:
+        for i in range(1,10):
+            if i < 4:
+                driver.execute_script("window.scrollTo(0, 600)")
+            elif i > 3 and i < 7:
+                time.sleep(2)
+                driver.execute_script("window.scrollTo(0, 1000)")
+            elif i > 6 and i < 10:
+                time.sleep(2)
+                driver.execute_script("window.scrollTo(0, 1700)")
+                xpath = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[5]/article[" + str(
+                    i) + "]/div/a[1]/h2"
+                LOGGER.info("Clicking on product")
+                time.sleep(2)
+                driver.find_element_by_xpath(xpath).click()
+                select_properties(driver)
+                counter += 1
+
+    elif click_next_counter < 13:
+        for i in range(1,16):
+            if i <4:
+                driver.execute_script("window.scrollTo(0, 600)")
+            elif i>3 and i<7:
+                time.sleep(2)
+                driver.execute_script("window.scrollTo(0, 1000)")
+            elif i>6 and i<10:
+                time.sleep(2)
+                driver.execute_script("window.scrollTo(0, 1700)")
+            elif i>9 and i<13:
+                time.sleep(2)
+                driver.execute_script("window.scrollTo(0, 2400)")
+            elif i>12:
+                time.sleep(2)
+                driver.execute_script("window.scrollTo(0, 3100)")
+            xpath = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[5]/article["+str(i)+"]/div/a[1]/h2"
+            LOGGER.info("Clicking on product")
             time.sleep(2)
-            driver.execute_script("window.scrollTo(0, 1000)")
-        elif i>6 and i<10:
-            time.sleep(2)
-            driver.execute_script("window.scrollTo(0, 1700)")
-        elif i>9 and i<13:
-            time.sleep(2)
-            driver.execute_script("window.scrollTo(0, 2400)")
-        elif i>12:
-            time.sleep(2)
-            driver.execute_script("window.scrollTo(0, 3100)")
-        xpath = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[5]/article["+str(i)+"]/div/a[1]/h2"
-        LOGGER.info("Clicking on product")
-        time.sleep(2)
-        driver.find_element_by_xpath(xpath).click()
-        select_properties(driver)
-        counter += 1
+            driver.find_element_by_xpath(xpath).click()
+            select_properties(driver)
+            counter += 1
+            if counter == 15:
+                time.sleep(2)
+                click_next(driver)
+    elif click_next_counter > 13:
+        return
     # xpath_1 = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[5]/article[15]/div/a[1]/h2"
-    if counter == 15:
-        time.sleep(2)
-        click_next(driver)
     # LOGGER.info("Clicking on product")
     # driver.find_element_by_xpath(xpath_1).click()
     # ActionChains(driver).move_to_element(link).click().perform()
@@ -155,16 +207,24 @@ def open_product(driver):
 
 
 def click_next(driver):
+    global click_next_counter
+    click_next_counter += 1
     driver.execute_script("window.scrollTo(0, 600)")
-    time.sleep(2)
-    xpath = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[4]/div/div/ul/li[7]/a"
+    time.sleep(3)
+    if click_next_counter < 4:
+        xpath = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[4]/div/div/ul/li[7]/a"
+    elif click_next_counter >3 and click_next_counter < 10:
+        xpath = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[4]/div/div/ul/li[9]/a"
+    elif click_next_counter > 9 and click_next_counter < 14:
+        xpath = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[4]/div/div/ul/li[8]/a"
+    elif click_next_counter > 13:
+        return
     LOGGER.info("Clicking next")
     driver.find_element_by_xpath(xpath).click()
     open_product(driver)
     # xpath_1 = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[5]/article[15]/div/a[1]/h2"
     # time.sleep(2)
     # driver.find_element_by_xpath(xpath).click()
-    return
 
 
 
