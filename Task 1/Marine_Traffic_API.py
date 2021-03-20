@@ -1,6 +1,6 @@
 import requests
 import psycopg2
-
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 def call_api():
     print("Calling PS01-API from MarineTraffic")
     try:
@@ -16,16 +16,24 @@ def call_api():
 
 
 def connect_to_db(response):
+    db_exists = False
     db_name = "marinetraffic"
     user = "postgres"
     host = "localhost"
     password = "postgres"
     table_name = "ship_positions"
-    conn = psycopg2.connect(user=user, host=host, password=password)
+    conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
     cur = conn.cursor()
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
-    cur.execute('DROP DATABASE IF EXISTS '+ db_name)
-    cur.execute('CREATE DATABASE '+ db_name)
+    cur.execute("SELECT datname FROM pg_database;")
+    list_database = cur.fetchall()
+    for i in list_database:
+        if "marinetraffic" in str(i):
+            db_exists = True
+    # cur.execute('DROP DATABASE IF EXISTS '+ db_name)
+    if not db_exists:
+        cur.execute('CREATE DATABASE '+ db_name)
 
     #cur.execute('DROP TABLE IF EXISTS ' + table_name)
     cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP PRIMARY KEY, SHIP_ID INT);')
@@ -47,9 +55,17 @@ def connect_to_db(response):
 
 
 if __name__ == "__main__":
-    response = call_api()
-    if response:
-        connect_to_db(response)
+    while True:
+        value = input("Please choose between the following\n1. Call MarineTraffic API\n2. Manually enter values to the Database\nEnter the value: ")
+        value = int(value)
+        if value == 1:
+            response = call_api()
+            if response:
+                connect_to_db(response)
+        elif value == 2:
+            print("Work in Progress")
+        else:
+            print("Incorrect Value")
 
 # db_name = "marinetraffic"
 # user = "postgres"
