@@ -1,6 +1,7 @@
 import requests
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+import datetime
 def call_api():
     print("Calling PS01-API from MarineTraffic")
     try:
@@ -53,7 +54,67 @@ def connect_to_db(response):
     cur.close()
     conn.close()
 
+def insert_into_db():
+    mmsi = input("Please enter the MMSI: ")
+    mmsi = int(mmsi)
+    imo = input("Please enter imo: ")
+    imo = int(imo)
+    status = input("Please enter the status: ")
+    status = int(status)
+    speed = input("Please enter the speed: ")
+    speed = int(speed)
+    lon = input("Please enter the Longitude: ")
+    lon = float(lon)
+    lat = input("Please enter the latitude: ")
+    lat = float(lat)
+    course = input("Please enter the course: ")
+    course = int(course)
+    heading = input("Please enter the heading: ")
+    heading = int(heading)
+    time = input("Please enter the timestamp: ")
+    time = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+    id = input("Please enter the ship id: ")
+    id = int(id)
 
+    db_exists = False
+    db_name = "marinetraffic"
+    user = "postgres"
+    host = "localhost"
+    password = "postgres"
+    table_name = "ship_positions"
+    conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
+    cur = conn.cursor()
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
+    cur.execute("SELECT datname FROM pg_database;")
+    list_database = cur.fetchall()
+    for i in list_database:
+        if "marinetraffic" in str(i):
+            db_exists = True
+    # cur.execute('DROP DATABASE IF EXISTS '+ db_name)
+    if not db_exists:
+        cur.execute('CREATE DATABASE ' + db_name)
+
+    # cur.execute('DROP TABLE IF EXISTS ' + table_name)
+    cur.execute(
+        'CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP PRIMARY KEY, SHIP_ID INT);')
+
+    columns_names = ['MMSI', 'IMO', 'STATUS', 'SPEED', 'LON', 'LAT', 'COURSE', 'HEADING', 'TIMESTAMP', 'SHIP_ID']
+    values = [mmsi, imo, status, speed, lon, lat, course, heading, time, id]
+    columns_names_str = ','.join(columns_names)
+    # values_str = ','.join(values)
+    binds_str = ','.join('%s' for _ in range(len(columns_names)))
+
+
+    # cur.execute('INSERT INTO ' + table_name + '(PRODUCT_ID, FREQUENCY, VOLTAGE, MIN_RATING, MAX_RATING, SPEED) VALUES('+product_id+','+frequency+','+voltage+','+min_rating+','+max_rating+','+speed+')')
+    sql = ('INSERT INTO ' + table_name + '({columns_names}) VALUES ({binds})'.format(columns_names=columns_names_str,
+                                                                                     binds=str(binds_str)))
+    try:
+        cur.execute(sql, values)
+        print("Database successfully updated with the input values")
+    except Exception as e:
+        print(e)
+    return
 if __name__ == "__main__":
     while True:
         value = input("Please choose between the following\n1. Call MarineTraffic API\n2. Manually enter values to the Database\n3. Exit\nEnter the value: ")
@@ -63,7 +124,7 @@ if __name__ == "__main__":
             if response:
                 connect_to_db(response)
         elif value == 2:
-            print("Work in Progress")
+            insert_into_db()
         elif value == 3:
             exit()
         else:
