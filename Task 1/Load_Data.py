@@ -10,24 +10,31 @@ password = "postgres"
 table_name_position = "position_data"
 table_name_engines = "ship_engines"
 table_name_owners = "ships_owners"
+
+conn_test = psycopg2.connect(dbname="postgres", user=user, host=host, password=password)
+cur_test = conn_test.cursor()
+conn_test.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+cur_test.execute("SELECT datname FROM pg_database;")
+list_database = cur_test.fetchall()
+for i in list_database:
+    if db_name in str(i):
+        db_exists = True
+        print("inside")
+if not db_exists:
+    cur_test.execute('CREATE DATABASE ' + db_name)
+conn_test.commit()
+cur_test.close()
+conn_test.close()
+
 conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
 cur = conn.cursor()
 conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-cur.execute("SELECT datname FROM pg_database;")
-list_database = cur.fetchall()
-for i in list_database:
-    if "marinetraffic" in str(i):
-        db_exists = True
-# cur.execute('DROP DATABASE IF EXISTS '+ db_name)
-if not db_exists:
-    cur.execute('CREATE DATABASE ' + db_name)
 cur.execute('DROP TABLE IF EXISTS ' + table_name_position)
 cur.execute('DROP TABLE IF EXISTS ' + table_name_engines)
 cur.execute('DROP TABLE IF EXISTS ' + table_name_owners)
 cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_position + '(SHIP VARCHAR, TIMESTAMPS TIMESTAMP, SPEED INT, LON FLOAT(10), LAT FLOAT(10));')
 cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_engines + '(MMSI INT, SHIP_NAME VARCHAR, ENGINE1_ID VARCHAR, ENGINE1_NAME VARCHAR, ENGINE2_ID VARCHAR, ENGINE2_NAME VARCHAR, ENGINE3_ID VARCHAR, ENGINE3_NAME VARCHAR);')
 cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_owners + '(OWNER VARCHAR, SHIP_ID VARCHAR);')
-
 df = pandas.read_csv('ships_per_owner.csv')
 ship_id = []
 owner = []

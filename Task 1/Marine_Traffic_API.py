@@ -17,24 +17,16 @@ def call_api():
 
 
 def connect_to_db(response):
-    db_exists = False
     db_name = "marinetraffic"
     user = "postgres"
     host = "localhost"
     password = "postgres"
     table_name = "ship_positions"
+    check_for_db(db_name=db_name)
+
     conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
     cur = conn.cursor()
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-
-    cur.execute("SELECT datname FROM pg_database;")
-    list_database = cur.fetchall()
-    for i in list_database:
-        if "marinetraffic" in str(i):
-            db_exists = True
-    # cur.execute('DROP DATABASE IF EXISTS '+ db_name)
-    if not db_exists:
-        cur.execute('CREATE DATABASE '+ db_name)
 
     #cur.execute('DROP TABLE IF EXISTS ' + table_name)
     cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP PRIMARY KEY, SHIP_ID INT);')
@@ -76,24 +68,16 @@ def insert_into_db():
     id = input("Please enter the ship id: ")
     id = int(id)
 
-    db_exists = False
     db_name = "marinetraffic"
     user = "postgres"
     host = "localhost"
     password = "postgres"
     table_name = "ship_positions"
+    check_for_db(db_name=db_name)
+
     conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
     cur = conn.cursor()
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-
-    cur.execute("SELECT datname FROM pg_database;")
-    list_database = cur.fetchall()
-    for i in list_database:
-        if "marinetraffic" in str(i):
-            db_exists = True
-    # cur.execute('DROP DATABASE IF EXISTS '+ db_name)
-    if not db_exists:
-        cur.execute('CREATE DATABASE ' + db_name)
 
     # cur.execute('DROP TABLE IF EXISTS ' + table_name)
     cur.execute(
@@ -115,6 +99,29 @@ def insert_into_db():
     except Exception as e:
         print(e)
     return
+
+def check_for_db(db_name):
+    db_exists = False
+    user = "postgres"
+    host = "localhost"
+    password = "postgres"
+    conn_test = psycopg2.connect(dbname="postgres", user=user, host=host, password=password)
+    cur_test = conn_test.cursor()
+    conn_test.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cur_test.execute("SELECT datname FROM pg_database;")
+    list_database = cur_test.fetchall()
+    for i in list_database:
+        if db_name in str(i):
+            db_exists = True
+    if not db_exists:
+        cur_test.execute('CREATE DATABASE ' + db_name)
+        print("Database "+db_name+" created")
+    conn_test.commit()
+    cur_test.close()
+    conn_test.close()
+    return
+
+
 if __name__ == "__main__":
     while True:
         value = input("Please choose between the following\n1. Call MarineTraffic API\n2. Manually enter values to the Database\n3. Exit\nEnter the value: ")

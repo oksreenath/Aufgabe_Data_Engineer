@@ -87,51 +87,41 @@ def select_properties(driver):
     time.sleep(2)
     return
 
-def setup_db():
+def check_for_db(db_name):
     db_exists = False
-    db_name = "marinetraffic"
     user = "postgres"
-    password = "postgres"
     host = "localhost"
-    conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
-    cur = conn.cursor()
-    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cur.execute("SELECT datname FROM pg_database;")
-    list_database = cur.fetchall()
+    password = "postgres"
+    conn_test = psycopg2.connect(dbname="postgres", user=user, host=host, password=password)
+    cur_test = conn_test.cursor()
+    conn_test.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cur_test.execute("SELECT datname FROM pg_database;")
+    list_database = cur_test.fetchall()
     for i in list_database:
-        if "marinetraffic" in str(i):
+        if db_name in str(i):
             db_exists = True
-    # cur.execute('DROP DATABASE IF EXISTS '+ db_name)
     if not db_exists:
-        cur.execute('CREATE DATABASE '+ db_name)
-    return conn, cur
+        cur_test.execute('CREATE DATABASE ' + db_name)
+        print("Database "+db_name+" created")
+    conn_test.commit()
+    cur_test.close()
+    conn_test.close()
+    return
 
 def insert_to_db(product_id, frequency, voltage, min_rating,
                  max_rating, speed):
 
-    conn, cur = setup_db()
-    # db_exists = False
-    # db_name = "marinetraffic"
-    # user = "postgres"
-    # password = "postgres"
 
-    # host = "localhost"
-    #
-    # conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
-    # cur = conn.cursor()
-    # conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    # cur.execute("SELECT datname FROM pg_database;")
-    # list_database = cur.fetchall()
-    # for i in list_database:
-    #     if "marinetraffic" in str(i):
-    #         db_exists = True
-    # # cur.execute('DROP DATABASE IF EXISTS '+ db_name)
-    # if not db_exists:
-    #     cur.execute('CREATE DATABASE '+ db_name)
-
-    # cur.execute('CREATE DATABASE ' + db_name)
-
+    db_name = "marinetraffic"
+    user = "postgres"
+    password = "postgres"
+    host = "localhost"
     table_name = "motors"
+    check_for_db(db_name)
+
+    conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
+    cur = conn.cursor()
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     cur.execute('CREATE TABLE IF NOT EXISTS '+ table_name +' (PRODUCT_ID VARCHAR, FREQUENCY VARCHAR, VOLTAGE VARCHAR, MIN_RATING VARCHAR, MAX_RATING VARCHAR, SPEED VARCHAR);')
     columns_names = ['PRODUCT_ID', 'FREQUENCY', 'VOLTAGE', 'MIN_RATING', 'MAX_RATING', 'SPEED']
     values = [product_id, frequency, voltage, min_rating, max_rating, speed]
