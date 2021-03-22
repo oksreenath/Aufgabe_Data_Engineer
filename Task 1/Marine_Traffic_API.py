@@ -7,9 +7,9 @@ def call_api():
     try:
         #response = requests.get('htthttps://services.marinetraffic.com/api/exportvesseltrack/631820efd957bc0869644ad2753d969118be4b15/v:3/fromdate:2021-01-01 01:01:01/todate:2021-01-01 01:06:02/mmsi:269057489/protocol:jsono')
         response = [{'MMSI': '269057489', 'IMO': '0', 'STATUS': '5', 'SPEED': '0', 'LON': '6.987368', 'LAT': '50.973230',
-                 'COURSE': '22', 'HEADING': '88', 'TIMESTAMP': '2021-01-01T01:05:48', 'SHIP_ID': '330455'},
+                 'COURSE': '22', 'HEADING': '88', 'TIMESTAMP': '2021-01-01T01:05:49', 'SHIP_ID': '330455'},
                 {'MMSI': '269057489', 'IMO': '0', 'STATUS': '5', 'SPEED': '0', 'LON': '6.987375', 'LAT': '50.973230',
-                 'COURSE': '22', 'HEADING': '89', 'TIMESTAMP': '2021-01-01T01:26:48', 'SHIP_ID': '330455'}]
+                 'COURSE': '22', 'HEADING': '89', 'TIMESTAMP': '2021-01-01T01:26:49', 'SHIP_ID': '330455'}]
         #data = response.json()
         return response
     except Exception as e:
@@ -63,7 +63,7 @@ def insert_into_db():
     course = int(course)
     heading = input("Please enter the heading: ")
     heading = int(heading)
-    time = input("Please enter the timestamp: ")
+    time = input("Please enter the timestamp: YYYY-MM-DD HH:MM:SS ")
     time = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
     id = input("Please enter the ship id: ")
     id = int(id)

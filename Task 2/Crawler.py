@@ -6,9 +6,9 @@ import time
 import argparse
 import logging.config
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-# from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 # from selenium.webdriver.common.action_chains import ActionChains
 # from dateutil import parser as date_parser
 # from selenium.webdriver.common.by import By
@@ -63,29 +63,41 @@ def run(driver):
 
 def select_properties(driver):
     time.sleep(4)
-    id = "//*[@id='detail-section']/section[2]/div/div[2]/h1"
-    product_id = driver.find_element_by_xpath(id).text
-    print(product_id)
-    freq = "//*[@id='tab2-1']/div/div[2]/div[2]/div[5]/span[2]"
-    frequency = driver.find_element_by_xpath(freq).text
-    print(frequency)
-    vol = "//*[@id='tab2-1']/div/div[2]/div[2]/div[4]/span[2]"
-    voltage = driver.find_element_by_xpath(vol).text
-    print(voltage)
-    min_rat = "//*[@id='tab2-1']/div/div[2]/div[2]/div[1]/span[2]"
-    min_rating = driver.find_element_by_xpath(min_rat).text
-    print(min_rating)
-    max_rat = "//*[@id='tab2-1']/div/div[2]/div[2]/div[2]/span[2]"
-    max_rating = driver.find_element_by_xpath(max_rat).text
-    print(max_rating)
-    sp = "//*[@id='tab2-1']/div/div[2]/div[2]/div[6]/span[2]"
-    speed = driver.find_element_by_xpath(sp).text
-    print(speed)
-    driver.execute_script("window.history.go(-1)")
-    insert_to_db(product_id=product_id, frequency=frequency, voltage=voltage,
-                 min_rating=min_rating, max_rating=max_rating, speed=speed)
-    time.sleep(2)
-    return
+    try:
+        id = "//*[@id='detail-section']/section[2]/div/div[2]/h1"
+        product_id = driver.find_element_by_xpath(id).text
+        print(product_id)
+        freq = "//*[@id='tab2-1']/div/div[2]/div[2]/div[5]/span[2]"
+        frequency = driver.find_element_by_xpath(freq).text
+        print(frequency)
+        vol = "//*[@id='tab2-1']/div/div[2]/div[2]/div[4]/span[2]"
+        voltage = driver.find_element_by_xpath(vol).text
+        print(voltage)
+        min_rat = "//*[@id='tab2-1']/div/div[2]/div[2]/div[1]/span[2]"
+        min_rating = driver.find_element_by_xpath(min_rat).text
+        print(min_rating)
+        max_rat = "//*[@id='tab2-1']/div/div[2]/div[2]/div[2]/span[2]"
+        max_rating = driver.find_element_by_xpath(max_rat).text
+        print(max_rating)
+        sp = "//*[@id='tab2-1']/div/div[2]/div[2]/div[6]/span[2]"
+        speed = driver.find_element_by_xpath(sp).text
+        print(speed)
+        if "or" in speed:
+            min_speed = speed.split()[0]
+            max_speed = speed.split()[2]
+        else:
+            min_speed = speed.split()[0]
+            max_speed = speed.split()[0]
+
+        driver.execute_script("window.history.go(-1)")
+        insert_to_db(product_id=product_id, frequency=frequency, voltage=voltage,
+                     min_rating=min_rating, max_rating=max_rating, min_speed=min_speed,
+                     max_speed=max_speed)
+        time.sleep(2)
+        return
+    except Exception as e:
+        print(e)
+        return
 
 def check_for_db(db_name):
     db_exists = False
@@ -109,7 +121,7 @@ def check_for_db(db_name):
     return
 
 def insert_to_db(product_id, frequency, voltage, min_rating,
-                 max_rating, speed):
+                 max_rating, min_speed, max_speed):
 
 
     db_name = "marinetraffic"
@@ -122,9 +134,9 @@ def insert_to_db(product_id, frequency, voltage, min_rating,
     conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
     cur = conn.cursor()
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cur.execute('CREATE TABLE IF NOT EXISTS '+ table_name +' (PRODUCT_ID VARCHAR, FREQUENCY VARCHAR, VOLTAGE VARCHAR, MIN_RATING VARCHAR, MAX_RATING VARCHAR, SPEED VARCHAR);')
-    columns_names = ['PRODUCT_ID', 'FREQUENCY', 'VOLTAGE', 'MIN_RATING', 'MAX_RATING', 'SPEED']
-    values = [product_id, frequency, voltage, min_rating, max_rating, speed]
+    cur.execute('CREATE TABLE IF NOT EXISTS '+ table_name +' (PRODUCT_ID VARCHAR, FREQUENCY VARCHAR, VOLTAGE VARCHAR, MIN_RATING VARCHAR, MAX_RATING VARCHAR, MIN_SPEED INT, MAX_SPEED INT);')
+    columns_names = ['PRODUCT_ID', 'FREQUENCY', 'VOLTAGE', 'MIN_RATING', 'MAX_RATING', 'MIN_SPEED', 'MAX_SPEED']
+    values = [product_id, frequency, voltage, min_rating, max_rating, min_speed, max_speed]
     columns_names_str = ','.join(columns_names)
     values_str = ','.join(values)
     binds_str = ','.join('%s' for _ in range(len(columns_names)))
@@ -246,5 +258,6 @@ if __name__ == "__main__":
         elif "linux" in sys.platform:
             executable_path = "./bin/chromedriver_linux"
         driver = webdriver.Chrome(executable_path=executable_path, chrome_options=webdriver.ChromeOptions())
-
+        #driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install())
+        # driver = webdriver.Remote("http://127.0.0.1:4444/wd/hub", DesiredCapabilities.CHROME)
     run(driver=driver)
