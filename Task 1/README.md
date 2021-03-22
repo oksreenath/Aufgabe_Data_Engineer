@@ -25,7 +25,5 @@ The script produces a file named 'ships_per_owner_pivoted.csv' which is derived 
 The database will be populated with the following tables:
 * position_data
 * ship_engines
-* ship_owners\
-\
- 
+* ship_owners
 
