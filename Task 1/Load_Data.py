@@ -19,7 +19,6 @@ list_database = cur_test.fetchall()
 for i in list_database:
     if db_name in str(i):
         db_exists = True
-        print("inside")
 if not db_exists:
     cur_test.execute('CREATE DATABASE ' + db_name)
 conn_test.commit()
@@ -45,7 +44,6 @@ for i in range(0,5):
 data_tuples = list(zip(ship_id, owner))
 ships_per_owner = pandas.DataFrame(data_tuples, columns=['SHIP_ID', 'OWNER'])
 ships_per_owner = ships_per_owner.dropna(axis=0, how="any")
-print(ships_per_owner)
 ships_per_owner.to_csv("ships_per_owner_pivoted.csv", index=False)
 
 
