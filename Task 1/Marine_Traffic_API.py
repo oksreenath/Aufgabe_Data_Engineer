@@ -131,10 +131,13 @@ if __name__ == "__main__":
             mmsi = input("Please enter the MMSI: ")
             response = call_api(mmsi=mmsi)
             if "400" in str(response):
-                print("MMSI not found. Please try again with another MMSI.")
+                print("No position data available for this MMSI. Please try again with another MMSI.")
             elif "200" in str(response):
                 response = response.json()
-                connect_to_db(response)
+                if response:
+                    connect_to_db(response)
+                else:
+                    print("No position data available for this MMSI. Please try again with another MMSI.")
         elif value == 2:
             insert_into_db()
         elif value == 3:
