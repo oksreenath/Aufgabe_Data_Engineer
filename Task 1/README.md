@@ -22,8 +22,9 @@ If the user chooses option 2, the user is prompted to input the values for each 
 \
 This sub-repository also contains the Python file Load_Data.py. This script is used to upload the data in the csv files 'ship_engines.csv', 'ships_per_owner.csv' & 'position_data.csv' to the database.\
 The script produces a file named 'ships_per_owner_pivoted.csv' which is derived from the file 'ships_per_owner.csv'. 
-The database will be populated with the following tables:
-*position_data
+The database will be populated with the following tables:\
+
+* position_data
 * ship_engines
 * ship_owners
 
