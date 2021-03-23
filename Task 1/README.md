@@ -24,7 +24,7 @@ This sub-repository also contains the Python file Load_Data.py. This script is u
 The script produces a file named 'ships_per_owner_pivoted.csv' which is derived from the file 'ships_per_owner.csv'. 
 The database will be populated with the following tables:
 **position_data**\
-
+![Image](/Aufgabe_Data_Engineer/Images/Position_Data.png?raw=true)
 * ship_engines
 * ship_owners
 
