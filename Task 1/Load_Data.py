@@ -31,9 +31,9 @@ conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 cur.execute('DROP TABLE IF EXISTS ' + table_name_position)
 cur.execute('DROP TABLE IF EXISTS ' + table_name_engines)
 cur.execute('DROP TABLE IF EXISTS ' + table_name_owners)
-cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_position + '(SHIP VARCHAR, TIMESTAMPS TIMESTAMP, SPEED INT, LON FLOAT(10), LAT FLOAT(10));')
-cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_engines + '(MMSI INT, SHIP_NAME VARCHAR, ENGINE1_ID VARCHAR, ENGINE1_NAME VARCHAR, ENGINE2_ID VARCHAR, ENGINE2_NAME VARCHAR, ENGINE3_ID VARCHAR, ENGINE3_NAME VARCHAR);')
-cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_owners + '(OWNER VARCHAR, SHIP_ID VARCHAR);')
+cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_engines + '(MMSI INT, SHIP_NAME VARCHAR, ENGINE1_ID VARCHAR, ENGINE1_NAME VARCHAR, ENGINE2_ID VARCHAR, ENGINE2_NAME VARCHAR, ENGINE3_ID VARCHAR, ENGINE3_NAME VARCHAR, PRIMARY KEY(SHIP_NAME));')
+cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_owners + '(SHIP_ID VARCHAR, OWNERS VARCHAR, PRIMARY KEY(SHIP_ID));')
+cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_position + '(SHIP VARCHAR, TIMESTAMPS TIMESTAMP, SPEED INT, LON FLOAT(10), LAT FLOAT(10), CONSTRAINT fk_ship FOREIGN KEY(SHIP) REFERENCES ships_owners(SHIP_ID));')
 df = pandas.read_csv('ships_per_owner.csv')
 ship_id = []
 owner = []
@@ -42,20 +42,19 @@ for i in range(0,5):
         ship_id.append(row[i])
         owner.append(df.columns[i])
 data_tuples = list(zip(ship_id, owner))
-ships_per_owner = pandas.DataFrame(data_tuples, columns=['SHIP_ID', 'OWNER'])
+ships_per_owner = pandas.DataFrame(data_tuples, columns=['SHIP_ID', 'OWNERS'])
 ships_per_owner = ships_per_owner.dropna(axis=0, how="any")
 ships_per_owner.to_csv("ships_per_owner_pivoted.csv", index=False)
 
-
+with open('ships_per_owner_pivoted.csv','r') as f:
+    next(f)
+    cur.copy_from(f,'ships_owners', sep=',')
 with open('position_data.csv','r') as f:
     next(f)
     cur.copy_from(f, 'position_data', sep=',')
 with open('ship_engines.csv','r') as f:
     next(f)
     cur.copy_from(f, 'ship_engines', sep=',')
-with open('ships_per_owner_pivoted.csv','r') as f:
-    next(f)
-    cur.copy_from(f,'ships_owners', sep=',')
 conn.commit()
 cur.close()
 conn.close()

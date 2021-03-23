@@ -1,0 +1,1 @@
+SELECT * FROM position_data WHERE speed = (SELECT MAX(SPEED) FROM position_data) LIMIT 1;

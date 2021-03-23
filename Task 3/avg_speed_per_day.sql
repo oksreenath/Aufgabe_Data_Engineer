@@ -1,3 +1,5 @@
+--Create View for each Ship
+
 CREATE OR REPLACE VIEW speed_per_day_463 AS SELECT * FROM position_data WHERE ship='Ship_463';
 CREATE OR REPLACE VIEW speed_per_day_733 AS SELECT * FROM position_data WHERE ship='Ship_733';
 CREATE OR REPLACE VIEW speed_per_day_642 AS SELECT * FROM position_data WHERE ship='Ship_642';
@@ -11,6 +13,8 @@ CREATE OR REPLACE VIEW speed_per_day_707 AS SELECT * FROM position_data WHERE sh
 
 
 SELECT DISTINCT ship from position_data;
+
+--Calculate average speed of each vessel for each day
 
 SELECT cast(timestamps as date) as days, AVG(speed) from speed_per_day_337
 GROUP BY cast(timestamps as date) order by days;
