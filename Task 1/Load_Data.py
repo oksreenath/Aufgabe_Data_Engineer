@@ -34,6 +34,9 @@ cur.execute('DROP TABLE IF EXISTS ' + table_name_owners)
 cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_engines + '(MMSI INT, SHIP_NAME VARCHAR, ENGINE1_ID VARCHAR, ENGINE1_NAME VARCHAR, ENGINE2_ID VARCHAR, ENGINE2_NAME VARCHAR, ENGINE3_ID VARCHAR, ENGINE3_NAME VARCHAR, PRIMARY KEY(SHIP_NAME));')
 cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_owners + '(SHIP_ID VARCHAR, OWNERS VARCHAR, PRIMARY KEY(SHIP_ID));')
 cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name_position + '(SHIP VARCHAR, TIMESTAMPS TIMESTAMP, SPEED INT, LON FLOAT(10), LAT FLOAT(10), CONSTRAINT fk_ship FOREIGN KEY(SHIP) REFERENCES ships_owners(SHIP_ID));')
+
+#ships_per_owner.csv file is copied to a dataframe to pivot and saved back as a .csv file.
+
 df = pandas.read_csv('ships_per_owner.csv')
 ship_id = []
 owner = []
@@ -45,6 +48,8 @@ data_tuples = list(zip(ship_id, owner))
 ships_per_owner = pandas.DataFrame(data_tuples, columns=['SHIP_ID', 'OWNERS'])
 ships_per_owner = ships_per_owner.dropna(axis=0, how="any")
 ships_per_owner.to_csv("ships_per_owner_pivoted.csv", index=False)
+
+#The csv files are opened and the values are passed to the corresponding tables.
 
 with open('ships_per_owner_pivoted.csv','r') as f:
     next(f)

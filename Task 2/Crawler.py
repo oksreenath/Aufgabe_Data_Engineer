@@ -90,9 +90,9 @@ def select_properties(driver):
             max_speed = speed.split()[0]
 
         driver.execute_script("window.history.go(-1)")
-        insert_to_db(product_id=product_id, frequency=frequency, voltage=voltage,
-                     min_rating=min_rating, max_rating=max_rating, min_speed=min_speed,
-                     max_speed=max_speed)
+        # insert_to_db(product_id=product_id, frequency=frequency, voltage=voltage,
+        #              min_rating=min_rating, max_rating=max_rating, min_speed=min_speed,
+        #              max_speed=max_speed)
         time.sleep(2)
         return
     except Exception as e:
@@ -100,6 +100,7 @@ def select_properties(driver):
         return
 
 def check_for_db(db_name):
+    #Function for checking if the database marinetraffic exists.
     db_exists = False
     user = "postgres"
     host = "localhost"
@@ -123,7 +124,7 @@ def check_for_db(db_name):
 def insert_to_db(product_id, frequency, voltage, min_rating,
                  max_rating, min_speed, max_speed):
 
-
+    #Function for inserting the motor properties into the DB.
     db_name = "marinetraffic"
     user = "postgres"
     password = "postgres"
@@ -155,7 +156,11 @@ def open_product(driver):
     global click_next_counter
     time.sleep(2)
     counter = 0
+
+    #If the parser is on the last page, retrieve only the required motor specs and should not click on next.
+
     if click_next_counter == 13:
+        #The for loop scrolls to the preferred view based on the item number, clicks on the motor based on the Xpath.
         for i in range(1,10):
             if i < 4:
                 driver.execute_script("window.scrollTo(0, 600)")
@@ -209,10 +214,12 @@ def open_product(driver):
 
 
 def click_next(driver):
+    #Function for clicking on the next button.
     global click_next_counter
     click_next_counter += 1
     driver.execute_script("window.scrollTo(0, 600)")
     time.sleep(3)
+    #The Xpath of the next button changes based on the page. Hence, different Xpaths are assigned.
     if click_next_counter < 4:
         xpath = "//*[@id='product-family-page']/section[3]/div/div[2]/div/div[4]/div/div/ul/li[7]/a"
     elif click_next_counter >3 and click_next_counter < 10:
@@ -231,11 +238,11 @@ def click_next(driver):
 
 
 if __name__ == "__main__":
-    # insert_to_db(product_id='C32 with Upgradeable Package', frequency='50 or 60 Hz',voltage='220 to 4160', min_rating='830 ekW (910 kVA)',
-    #              max_rating='1000 ekW (1250 kVA)', speed='1500 or 1800 rpm')
     parser = argparse.ArgumentParser()
     parser.add_argument("--driver-type", default="chrome", choices=("firefox", "chrome"))
     args = parser.parse_args()
+
+    #Set driver properties based on Operating systems and Browser types.
 
     driver = None
     if args.driver_type == "firefox":
@@ -258,6 +265,4 @@ if __name__ == "__main__":
         elif "linux" in sys.platform:
             executable_path = "./bin/chromedriver_linux"
         driver = webdriver.Chrome(executable_path=executable_path, chrome_options=webdriver.ChromeOptions())
-        #driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install())
-        # driver = webdriver.Remote("http://127.0.0.1:4444/wd/hub", DesiredCapabilities.CHROME)
     run(driver=driver)

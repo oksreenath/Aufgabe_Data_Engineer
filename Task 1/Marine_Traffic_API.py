@@ -23,19 +23,26 @@ def connect_to_db(response):
     host = "localhost"
     password = "postgres"
     table_name = "ship_positions"
+
+    #Check if the DB marinetraffic exists in PostgresSQL.
     check_for_db(db_name=db_name)
 
+    #Connect to the marinetraffic DB
     conn = psycopg2.connect(dbname=db_name, user=user, host=host, password=password)
     cur = conn.cursor()
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
     #cur.execute('DROP TABLE IF EXISTS ' + table_name)
+
+    #Create the table ship_positions if it doesn't exist in the DB.
     cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP, SHIP_ID INT);')
 
+    #Create a list of column names to iterate through and create place holders for each value.
     columns_names = ['MMSI', 'IMO', 'STATUS', 'SPEED', 'LON', 'LAT', 'COURSE', 'HEADING', 'TIMESTAMP', 'SHIP_ID']
     columns_names_str = ','.join(columns_names)
     binds_str = ','.join('%s' for _ in range(len(columns_names)))
 
+    #Iterate through the response and assign each value to its corresponding columns.
     for data_dict in response:
         sql = ('INSERT INTO '+ table_name + '({columns_names}) VALUES ({binds})'.format(columns_names=columns_names_str,binds=binds_str))
         values = [data_dict[column_name] for column_name in columns_names]
@@ -43,11 +50,15 @@ def connect_to_db(response):
             cur.execute(sql, values)
         except Exception as e:
             print(e)
+    #Commit & close the connection.
     conn.commit()
     cur.close()
     conn.close()
 
 def insert_into_db():
+
+    #Get user input for each column.
+
     try:
         mmsi = input("Please enter the MMSI: ")
         mmsi = int(mmsi)
@@ -110,9 +121,15 @@ def check_for_db(db_name):
     user = "postgres"
     host = "localhost"
     password = "postgres"
+
+    #Connect to PostgresSQL and connect to the default postgres DB.
+
     conn_test = psycopg2.connect(dbname="postgres", user=user, host=host, password=password)
     cur_test = conn_test.cursor()
     conn_test.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
+    #Iterate through all the available databases to check for marinetraffic DB.
+    #If it doesn't exist, create the DB.
     cur_test.execute("SELECT datname FROM pg_database;")
     list_database = cur_test.fetchall()
     for i in list_database:
@@ -134,6 +151,9 @@ if __name__ == "__main__":
         if value == 1:
             mmsi = input("Please enter the MMSI: ")
             response = call_api(mmsi=mmsi)
+
+            #Check if the response contains an error or a response.
+
             if "400" in str(response):
                 print("No position data available for this MMSI. Please try again with another MMSI.")
             elif "200" in str(response):
