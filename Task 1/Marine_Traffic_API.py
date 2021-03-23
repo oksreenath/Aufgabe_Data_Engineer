@@ -30,7 +30,7 @@ def connect_to_db(response):
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
     #cur.execute('DROP TABLE IF EXISTS ' + table_name)
-    cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP PRIMARY KEY, SHIP_ID INT);')
+    cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP, SHIP_ID INT);')
 
     columns_names = ['MMSI', 'IMO', 'STATUS', 'SPEED', 'LON', 'LAT', 'COURSE', 'HEADING', 'TIMESTAMP', 'SHIP_ID']
     columns_names_str = ','.join(columns_names)
@@ -48,26 +48,30 @@ def connect_to_db(response):
     conn.close()
 
 def insert_into_db():
-    mmsi = input("Please enter the MMSI: ")
-    mmsi = int(mmsi)
-    imo = input("Please enter imo: ")
-    imo = int(imo)
-    status = input("Please enter the status: ")
-    status = int(status)
-    speed = input("Please enter the speed: ")
-    speed = int(speed)
-    lon = input("Please enter the Longitude: ")
-    lon = float(lon)
-    lat = input("Please enter the latitude: ")
-    lat = float(lat)
-    course = input("Please enter the course: ")
-    course = int(course)
-    heading = input("Please enter the heading: ")
-    heading = int(heading)
-    time = input("Please enter the timestamp: YYYY-MM-DD HH:MM:SS ")
-    time = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
-    id = input("Please enter the ship id: ")
-    id = int(id)
+    try:
+        mmsi = input("Please enter the MMSI: ")
+        mmsi = int(mmsi)
+        imo = input("Please enter imo: ")
+        imo = int(imo)
+        status = input("Please enter the status: ")
+        status = int(status)
+        speed = input("Please enter the speed: ")
+        speed = int(speed)
+        lon = input("Please enter the Longitude: ")
+        lon = float(lon)
+        lat = input("Please enter the latitude: ")
+        lat = float(lat)
+        course = input("Please enter the course: ")
+        course = int(course)
+        heading = input("Please enter the heading: ")
+        heading = int(heading)
+        time = input("Please enter the timestamp: YYYY-MM-DD HH:MM:SS ")
+        time = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+        id = input("Please enter the ship id: ")
+        id = int(id)
+    except Exception as e:
+        print(e)
+        return
 
     db_name = "marinetraffic"
     user = "postgres"
@@ -82,7 +86,7 @@ def insert_into_db():
 
     # cur.execute('DROP TABLE IF EXISTS ' + table_name)
     cur.execute(
-        'CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP PRIMARY KEY, SHIP_ID INT);')
+        'CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP, SHIP_ID INT);')
 
     columns_names = ['MMSI', 'IMO', 'STATUS', 'SPEED', 'LON', 'LAT', 'COURSE', 'HEADING', 'TIMESTAMP', 'SHIP_ID']
     values = [mmsi, imo, status, speed, lon, lat, course, heading, time, id]
