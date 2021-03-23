@@ -1,5 +1,6 @@
 This sub-repository contains the python file Crawler.py to crawl the webpage [www.finning.com](https://www.finning.com/en_CA/products/new/power-systems/electric-power-generation.html) \
 Similar to Task 1, the PostgresSQL database is running on docker.\
+\
 **Prerequisites**
 * Chrome installed
 * Docker & Python 3 installed.
@@ -24,4 +25,4 @@ The columns created in the motors table are:
 7. max_speed
 \
 \
-The speed attribute is split into min_speed and max_speed as some engines contains two different speed measurements. If there is only speed specified, both the columns contains the same speed.
+The speed attribute is split into min_speed and max_speed as some engines contains two different speed measurements. If there is only one speed specified, both the columns contains the same speed.
