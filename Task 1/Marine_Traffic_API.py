@@ -35,7 +35,7 @@ def connect_to_db(response):
     #cur.execute('DROP TABLE IF EXISTS ' + table_name)
 
     #Create the table ship_positions if it doesn't exist in the DB.
-    cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP, SHIP_ID INT);')
+    cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP, SHIP_ID INT, PRIMARY KEY (TIMESTAMP, SHIP_ID));')
 
     #Create a list of column names to iterate through and create place holders for each value.
     columns_names = ['MMSI', 'IMO', 'STATUS', 'SPEED', 'LON', 'LAT', 'COURSE', 'HEADING', 'TIMESTAMP', 'SHIP_ID']
@@ -97,7 +97,7 @@ def insert_into_db():
 
     # cur.execute('DROP TABLE IF EXISTS ' + table_name)
     cur.execute(
-        'CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP, SHIP_ID INT);')
+        'CREATE TABLE IF NOT EXISTS ' + table_name + '(MMSI INT, IMO INT, STATUS INT, SPEED INT, LON FLOAT(10), LAT FLOAT(10), COURSE INT, HEADING INT, TIMESTAMP TIMESTAMP, SHIP_ID INT, PRIMARY KEY (TIMESTAMP, SHIP_ID));')
 
     columns_names = ['MMSI', 'IMO', 'STATUS', 'SPEED', 'LON', 'LAT', 'COURSE', 'HEADING', 'TIMESTAMP', 'SHIP_ID']
     values = [mmsi, imo, status, speed, lon, lat, course, heading, time, id]
