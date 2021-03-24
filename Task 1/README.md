@@ -10,7 +10,7 @@ The Database uses a PostgresSQL container pulled from Dockerhub.\
 \
 \
 Run the Marine_Traffic_API.py file using the command `python3 Marine_Traffic_API.py`\
-The user can choose between\
+The user can choose between
 1. Call the Marine Traffic API.
 2. Insert the values directly into the Database.
 3. Exit the Python program.\

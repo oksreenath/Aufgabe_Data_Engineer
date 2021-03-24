@@ -7,7 +7,7 @@ Similar to Task 1, the PostgresSQL database is running on docker.\
 * Python libraries selenium & psycopg2 installed.
 * Please pull the PostgresSQL image using the command `docker pull postgres`
 * Once the image is pulled, please run the container using the command `docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres`
-* The bin folder contains the web drivers for selenium. Please place the bin folder in the same folder as the Crawler.py file.
+* The bin folder contains the web drivers for selenium. Please place the bin folder in the same folder as the Crawler.py file.\
 \
 Run the Crawler.py file using the command `python3 Crawler.py`\
 The python script will open up a chrome browser pointing to the web page where the list of motors are present.\
